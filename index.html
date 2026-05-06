@@ -541,8 +541,13 @@ const MATRIX_DATA = [
 const $=id=>document.getElementById(id);
 const qv=k=>Math.max(0,parseInt($('q_'+k).value)||0);
 const mv=k=>Math.max(0,parseInt($('m_'+k).value)||0);
-const fmt=n=>{ if(window._fmtPatch) return window._fmtPatch(n); return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); };
-const fmtK=n=>{ if(window._fmtPatch){ const sym=window._activeCurrency==='CAD'?'CA$':'$'; return n>=10000?sym+(n/1000).toFixed(1)+'k':window._fmtPatch(n); } return n>=10000?'$'+(n/1000).toFixed(1)+'k':fmt(n); };
+// ── CURRENCY: single source of truth ──
+window.CUR = {sym:'$', fx:1, code:'USD'};
+const fmt = n => {
+  const sym = window.CUR ? window.CUR.sym : '$';
+  return sym + n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+};
+const fmtK = n => { const sym = window.CUR ? window.CUR.sym : '$'; return n >= 10000 ? sym+(n/1000).toFixed(1)+'k' : fmt(n); };
 const pct=(a,b)=>b>0?Math.round(a/b*100):0;
 const clamp=(v,mn,mx)=>Math.max(mn,Math.min(mx,v));
 
@@ -550,7 +555,7 @@ function getCurrent(){const o={};Object.keys(P).forEach(k=>o[k]=qv(k));return o;
 function getModeled(){const o={};Object.keys(P).forEach(k=>o[k]=mv(k));return o;}
 function totalUsers(lic){return NON_ADDON.reduce((s,k)=>s+(lic[k]||0),0);}
 function calcCost(lic){
-  const fx=(window._activeCurrency==='CAD'&&window._activeFX)?window._activeFX:1;
+  const fx = window.CUR ? window.CUR.fx : 1;
   return Object.entries(lic).reduce((s,[k,v])=>s+(P[k]?P[k].p*v*fx:0),0);
 }
 
@@ -1295,7 +1300,7 @@ function copyReport(){
 window.addEventListener('load', function(){
   document.querySelectorAll('input.qty').forEach(el=>{ el.value='0'; el.setAttribute('autocomplete','off'); });
   const org=$('orgName'); if(org) org.value='';
-  window._fmtPatch=null; window._activeCurrency='USD';
+  window.CUR={sym:'$',fx:1,code:'USD'};
 });
 buildMatrix();
 </script>
@@ -1425,102 +1430,79 @@ function buildPriceTable(){
 }
 
 function resetPrices(){
-  // Reset all prices to base
+  // Reset prices to Microsoft retail
   Object.entries(BASE_PRICES).forEach(([k,v])=>{
-    const el=$('price_'+k);
-    if(el) el.value=v.toFixed(2);
+    const el=$('price_'+k); if(el) el.value=v.toFixed(2);
     if(P[k]) P[k].p = v;
   });
   // Reset currency to USD
-  $('curr-usd').checked = true;
-  $('curr-cad').checked = false;
-  $('fx-rate').value = '1.36';
-  CURRENCY = 'USD';
-  FX_RATE = 1.36;
-  window._fmtPatch = null;
-  window._activeCurrency = 'USD';
-  window._activeFX = 1;
-  // Reset all lic-meta labels back to USD
+  $('curr-usd').checked=true; $('curr-cad').checked=false;
+  $('fx-rate').value='1.36';
+  CURRENCY='USD'; FX_RATE=1.36;
+  window.CUR={sym:'$',fx:1,code:'USD'};
+  // Reset all price labels
   Object.keys(P).forEach(k=>{
-    const metaEl = document.querySelector(`#q_${k}`)?.closest('.lic-row')?.querySelector('.lic-meta');
-    if(metaEl){
-      const t = metaEl.textContent;
-      const rest = t.includes('·') ? t.slice(t.indexOf('·')) : '';
-      metaEl.textContent = `$${BASE_PRICES[k].toFixed(2)}/u/mo${rest}`;
-    }
-    const metaMod = document.querySelector(`#m_${k}`)?.closest('.lic-row')?.querySelector('.lic-meta');
-    if(metaMod) metaMod.textContent = `$${BASE_PRICES[k].toFixed(2)}/u/mo`;
+    const label=`$${BASE_PRICES[k].toFixed(2)}/u/mo`;
+    const mc=document.querySelector(`#q_${k}`)?.closest('.lic-row')?.querySelector('.lic-meta');
+    if(mc){const s=mc.textContent.includes('·')?mc.textContent.slice(mc.textContent.indexOf('·')):'';mc.textContent=label+s;}
+    const ms=document.querySelector(`#m_${k}`)?.closest('.lic-row')?.querySelector('.lic-meta');
+    if(ms) ms.textContent=label;
   });
-  // Re-run if analysis exists
-  // Reset price labels back to USD display
-  Object.keys(P).forEach(k=>{
-    const metaEl = document.querySelector(`#q_${k}`)?.closest('.lic-row')?.querySelector('.lic-meta');
-    if(metaEl){ const t=metaEl.textContent; const suffix=t.includes('·')?t.slice(t.indexOf('·')):''; metaEl.textContent=`$${BASE_PRICES[k].toFixed(2)}/u/mo${suffix}`; }
-    const metaMod = document.querySelector(`#m_${k}`)?.closest('.lic-row')?.querySelector('.lic-meta');
-    if(metaMod) metaMod.textContent=`$${BASE_PRICES[k].toFixed(2)}/u/mo`;
-  });
+  // Re-render
   if(window._state){ runAll(); if($('scen-content').style.display!=='none') updateScenario(); renderReport(); }
   buildPriceTable();
   updateCurrencyHighlight();
 }
 
 function applyPrices(){
-  CURRENCY = $('curr-cad').checked ? 'CAD' : 'USD';
-  FX_RATE  = parseFloat($('fx-rate').value)||1.36;
-  
-  // Update P prices from inputs
+  // 1. Read settings
+  const isCad = $('curr-cad').checked;
+  const fx    = isCad ? (parseFloat($('fx-rate').value)||1.36) : 1;
+  const sym   = isCad ? 'CA$' : '$';
+  const code  = isCad ? 'CAD' : 'USD';
+
+  // 2. Update module-level vars (used by buildPriceTable etc.)
+  CURRENCY = code;
+  FX_RATE  = fx;
+
+  // 3. Set global CUR — fmt() and calcCost() read this directly
+  window.CUR = { sym, fx, code };
+
+  // 4. Update prices in P[] from the modal inputs (USD base prices)
   Object.keys(P).forEach(k=>{
-    const el=$('price_'+k);
-    if(el){ P[k].p = parseFloat(el.value)||P[k].p; }
+    const el = $('price_'+k);
+    if(el) P[k].p = parseFloat(el.value) || P[k].p;
   });
 
-  // Update all lic-meta price labels in the UI
-  // Update all price labels to show converted currency
-  const fx2 = CURRENCY==='CAD' ? FX_RATE : 1;
-  const sym2 = CURRENCY==='CAD' ? 'CA$' : '$';
+  // 5. Update all per-license price labels in the UI
   Object.keys(P).forEach(k=>{
-    const displayP = (P[k].p * fx2).toFixed(2);
-    const metaEl = document.querySelector(`#q_${k}`)?.closest('.lic-row')?.querySelector('.lic-meta');
-    if(metaEl){
-      const t=metaEl.textContent;
-      const suffix = t.includes('·') ? t.slice(t.indexOf('·')) : '';
-      metaEl.textContent=`${sym2}${displayP}/u/mo${suffix}`;
+    const label = `${sym}${(P[k].p*fx).toFixed(2)}/u/mo`;
+    const metaCur = document.querySelector(`#q_${k}`)?.closest('.lic-row')?.querySelector('.lic-meta');
+    if(metaCur){
+      const suffix = metaCur.textContent.includes('·') ? metaCur.textContent.slice(metaCur.textContent.indexOf('·')) : '';
+      metaCur.textContent = label + suffix;
     }
-    const metaMod = document.querySelector(`#m_${k}`)?.closest('.lic-row')?.querySelector('.lic-meta');
-    if(metaMod) metaMod.textContent=`${sym2}${displayP}/u/mo`;
+    const metaScen = document.querySelector(`#m_${k}`)?.closest('.lic-row')?.querySelector('.lic-meta');
+    if(metaScen) metaScen.textContent = label;
   });
 
-  // ── SET PATCH FIRST before any rendering ──
-  window._activeCurrency = CURRENCY;
-  window._activeFX = FX_RATE;
-  window._fmtPatch = function(n){
-    const sym = CURRENCY==='CAD'?'CA$':'$';
-    const converted = CURRENCY==='CAD' ? n : n; // prices already converted via P[k].p
-    return sym+converted.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-  };
-
-  // NOW re-run — fmt() and fmtK() will use the patch throughout
+  // 6. Re-run analysis — fmt() and calcCost() now use window.CUR
   if(window._state){
     runAll();
     if($('scen-content').style.display!=='none') updateScenario();
     renderReport();
   }
 
-  const msg=$('price-applied-msg');
-  msg.style.display='inline';
-  msg.textContent=`✓ Applied (${CURRENCY})`;
-  setTimeout(()=>msg.style.display='none',2500);
+  // 7. Feedback
+  const msg = $('price-applied-msg');
+  msg.style.display = 'inline';
+  msg.textContent = `✓ Applied (${code}${isCad?' @ '+fx:'})`.replace(')',')');
+  msg.textContent = `✓ Applied (${code})`;
+  setTimeout(()=>msg.style.display='none', 2500);
   buildPriceTable();
 }
 
-// Currency symbol helper — used by applyPrices to reformat all outputs
-window._activeCurrency = 'USD';
-window._activeFX = 1;
-window.getActiveSym = function(){ return window._activeCurrency==='CAD'?'CA$':'$'; };
-window.fmtActive = function(n){
-  const sym = window._activeCurrency==='CAD'?'CA$':'$';
-  return sym+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-};
+// Currency managed via window.CUR = {sym, fx, code}
 
 // Close modal on backdrop click
 $('pricing-modal')?.addEventListener('click', function(e){
