@@ -279,7 +279,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
   <div class="notice" style="background:#FFF7F0;border-color:#FFCCA0">
   <span style="font-size:15px">⚠</span>
   <span><strong>Proprietary Tool — Edgeworx Solutions Inc.</strong> This tool and its methodology are proprietary to Edgeworx Solutions Inc. and are provided exclusively for use in licensed client engagements. Unauthorized reproduction or distribution is prohibited. All pricing is reference/estimate only — based on Microsoft retail list pricing. Actual costs vary by agreement type, CSP pricing, volume discounts, and region. Use for directional modelling only.
-  &nbsp;<button onclick="showPricingAdmin()" style="background:var(--ew-orange);color:#fff;border:none;border-radius:4px;padding:3px 10px;font-size:11px;font-family:var(--mono);cursor:pointer;margin-left:8px;font-weight:600">⚙ Adjust Prices / Currency</button></span>
+  &nbsp;<button id="price-admin-btn" onclick="showPricingAdmin()" style="background:var(--ew-orange);color:#fff;border:none;border-radius:4px;padding:3px 10px;font-size:11px;font-family:var(--mono);cursor:pointer;margin-left:8px;font-weight:600">⚙ Adjust Prices / Currency</button></span>
 </div>
 
   <div style="display:grid;grid-template-columns:340px 1fr;gap:20px;align-items:start">
@@ -475,6 +475,61 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div><button class="copy-btn" onclick="copyReport()">Copy to clipboard</button> <button class="print-btn" onclick="window.print()">🖨 Print / PDF</button></div>
     </div>
     <textarea class="report-textarea" id="report-text" readonly></textarea>
+  </div>
+</div>
+
+
+<!-- PRICING ADMIN MODAL -->
+<div id="pricing-modal" style="display:none;position:fixed;inset:0;background:rgba(10,15,20,.7);z-index:1000;overflow-y:auto;padding:40px 20px">
+  <div style="max-width:680px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="background:var(--ew-dark);padding:18px 24px;display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:#fff">⚙ Price & Currency Settings</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:2px">Adjust reference prices and display currency — changes apply to all calculations</div>
+      </div>
+      <button onclick="closePricingAdmin()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:5px;padding:6px 12px;cursor:pointer;font-size:13px">✕ Close</button>
+    </div>
+    <div style="padding:24px">
+
+      <!-- CURRENCY -->
+      <div style="margin-bottom:20px">
+        <div style="font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border2)">Display Currency</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <label style="display:flex;align-items:center;gap:7px;padding:8px 14px;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:13px;transition:all .12s" id="curr-usd-label">
+            <input type="radio" name="currency" value="USD" id="curr-usd" checked onchange="updateCurrency()" style="accent-color:var(--ew-orange)"> 🇺🇸 USD — US Dollar
+          </label>
+          <label style="display:flex;align-items:center;gap:7px;padding:8px 14px;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:13px;transition:all .12s" id="curr-cad-label">
+            <input type="radio" name="currency" value="CAD" id="curr-cad" onchange="updateCurrency()" style="accent-color:var(--ew-orange)"> 🇨🇦 CAD — Canadian Dollar
+          </label>
+        </div>
+        <div style="margin-top:10px;display:flex;align-items:center;gap:10px">
+          <label style="font-size:12px;color:var(--muted);font-family:var(--mono)">USD → CAD rate:</label>
+          <input type="number" id="fx-rate" value="1.36" step="0.01" min="0.5" max="3" style="width:90px;font-family:var(--mono);font-size:13px;text-align:center;padding:6px 8px;border:1px solid var(--border);border-radius:5px" oninput="updateCurrency()">
+          <span style="font-size:11px;color:var(--muted2)">Applied to all reference prices when CAD is selected</span>
+        </div>
+      </div>
+
+      <!-- PRICE TABLE -->
+      <div style="font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border2)">Reference Prices (USD base — edit to override)</div>
+      <div style="font-size:11px;color:var(--muted2);margin-bottom:12px">These are Microsoft retail annual commitment list prices. Adjust to reflect negotiated, CSP, or promotional pricing.</div>
+      <table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr>
+          <th style="background:var(--ew-dark);color:rgba(255,255,255,.7);font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:7px 10px;text-align:left">License</th>
+          <th style="background:var(--ew-dark);color:rgba(255,255,255,.7);font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:7px 10px;text-align:center">Tier</th>
+          <th style="background:var(--ew-dark);color:rgba(255,255,255,.7);font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:7px 10px;text-align:right">Price/User/Mo (USD)</th>
+          <th style="background:var(--ew-dark);color:rgba(255,255,255,.7);font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:7px 10px;text-align:right">Display Price</th>
+        </tr></thead>
+        <tbody id="price-table-body"></tbody>
+      </table>
+      <div style="margin-top:16px;display:flex;gap:10px">
+        <button onclick="resetPrices()" style="padding:8px 16px;background:var(--canvas);border:1px solid var(--border);border-radius:5px;font-family:var(--mono);font-size:11px;cursor:pointer;color:var(--muted)">↺ Reset to Microsoft Retail</button>
+        <button onclick="applyPrices()" style="padding:8px 20px;background:var(--ew-orange);color:#fff;border:none;border-radius:5px;font-family:var(--mono);font-size:12px;font-weight:600;cursor:pointer">✓ Apply & Recalculate</button>
+        <span id="price-applied-msg" style="font-size:11px;color:var(--green);align-self:center;display:none">✓ Applied</span>
+      </div>
+    </div>
+    <div style="background:#FFF7F0;border-top:1px solid #FFCCA0;padding:12px 24px;font-size:11px;color:#7A3F00">
+      <strong>Edgeworx Solutions Inc. — Proprietary.</strong> Price adjustments are session-only and not saved between sessions. All outputs remain directional estimates only.
+    </div>
   </div>
 </div>
 
@@ -1302,7 +1357,7 @@ window.addEventListener('load', function(){
   const org=$('orgName'); if(org) org.value='';
   window.CUR={sym:'$',fx:1,code:'USD'};
 });
-buildMatrix();
+buildFeatureMatrix();
 
 
 // ═══════════════════════════════════════════════
@@ -1332,17 +1387,21 @@ function fmtCurr(n){
 }
 
 function showPricingAdmin(){
+  const modal = document.getElementById('pricing-modal');
+  if(!modal){ console.error('pricing-modal not found'); return; }
   buildPriceTable();
-  $('pricing-modal').style.display='block';
+  modal.style.display='block';
   document.body.style.overflow='hidden';
-  // highlight active currency
   updateCurrencyHighlight();
 }
 
 function closePricingAdmin(){
-  $('pricing-modal').style.display='none';
+  const modal = document.getElementById('pricing-modal');
+  if(modal) modal.style.display='none';
   document.body.style.overflow='';
 }
+
+// closePricingAdmin defined above
 
 function updateCurrencyHighlight(){
   const isCAD = $('curr-cad').checked;
@@ -1458,63 +1517,28 @@ $('pricing-modal')?.addEventListener('click', function(e){
   if(e.target===this) closePricingAdmin();
 });
 
+
+// Wire button via addEventListener as backup
+(function(){
+  function wireBtn(){
+    var btn = document.getElementById('price-admin-btn');
+    if(btn && !btn._wired){
+      btn.addEventListener('click', function(){ showPricingAdmin(); });
+      btn._wired = true;
+      console.log('Pricing admin button wired');
+    }
+    var modal = document.getElementById('pricing-modal');
+    if(modal && !modal._wired){
+      modal.addEventListener('click', function(e){ if(e.target===this) closePricingAdmin(); });
+      modal._wired = true;
+    }
+  }
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', wireBtn);
+  } else {
+    wireBtn();
+  }
+})();
 </script>
-
-<!-- PRICING ADMIN MODAL -->
-<div id="pricing-modal" style="display:none;position:fixed;inset:0;background:rgba(10,15,20,.7);z-index:1000;overflow-y:auto;padding:40px 20px">
-  <div style="max-width:680px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.3)">
-    <div style="background:var(--ew-dark);padding:18px 24px;display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:#fff">⚙ Price & Currency Settings</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.45);margin-top:2px">Adjust reference prices and display currency — changes apply to all calculations</div>
-      </div>
-      <button onclick="closePricingAdmin()" style="background:rgba(255,255,255,.1);border:none;color:#fff;border-radius:5px;padding:6px 12px;cursor:pointer;font-size:13px">✕ Close</button>
-    </div>
-    <div style="padding:24px">
-
-      <!-- CURRENCY -->
-      <div style="margin-bottom:20px">
-        <div style="font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border2)">Display Currency</div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <label style="display:flex;align-items:center;gap:7px;padding:8px 14px;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:13px;transition:all .12s" id="curr-usd-label">
-            <input type="radio" name="currency" value="USD" id="curr-usd" checked onchange="updateCurrency()" style="accent-color:var(--ew-orange)"> 🇺🇸 USD — US Dollar
-          </label>
-          <label style="display:flex;align-items:center;gap:7px;padding:8px 14px;border:1.5px solid var(--border);border-radius:6px;cursor:pointer;font-size:13px;transition:all .12s" id="curr-cad-label">
-            <input type="radio" name="currency" value="CAD" id="curr-cad" onchange="updateCurrency()" style="accent-color:var(--ew-orange)"> 🇨🇦 CAD — Canadian Dollar
-          </label>
-        </div>
-        <div style="margin-top:10px;display:flex;align-items:center;gap:10px">
-          <label style="font-size:12px;color:var(--muted);font-family:var(--mono)">USD → CAD rate:</label>
-          <input type="number" id="fx-rate" value="1.36" step="0.01" min="0.5" max="3" style="width:90px;font-family:var(--mono);font-size:13px;text-align:center;padding:6px 8px;border:1px solid var(--border);border-radius:5px" oninput="updateCurrency()">
-          <span style="font-size:11px;color:var(--muted2)">Applied to all reference prices when CAD is selected</span>
-        </div>
-      </div>
-
-      <!-- PRICE TABLE -->
-      <div style="font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border2)">Reference Prices (USD base — edit to override)</div>
-      <div style="font-size:11px;color:var(--muted2);margin-bottom:12px">These are Microsoft retail annual commitment list prices. Adjust to reflect negotiated, CSP, or promotional pricing.</div>
-      <table style="width:100%;border-collapse:collapse;font-size:12px">
-        <thead><tr>
-          <th style="background:var(--ew-dark);color:rgba(255,255,255,.7);font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:7px 10px;text-align:left">License</th>
-          <th style="background:var(--ew-dark);color:rgba(255,255,255,.7);font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:7px 10px;text-align:center">Tier</th>
-          <th style="background:var(--ew-dark);color:rgba(255,255,255,.7);font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:7px 10px;text-align:right">Price/User/Mo (USD)</th>
-          <th style="background:var(--ew-dark);color:rgba(255,255,255,.7);font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:7px 10px;text-align:right">Display Price</th>
-        </tr></thead>
-        <tbody id="price-table-body"></tbody>
-      </table>
-      <div style="margin-top:16px;display:flex;gap:10px">
-        <button onclick="resetPrices()" style="padding:8px 16px;background:var(--canvas);border:1px solid var(--border);border-radius:5px;font-family:var(--mono);font-size:11px;cursor:pointer;color:var(--muted)">↺ Reset to Microsoft Retail</button>
-        <button onclick="applyPrices()" style="padding:8px 20px;background:var(--ew-orange);color:#fff;border:none;border-radius:5px;font-family:var(--mono);font-size:12px;font-weight:600;cursor:pointer">✓ Apply & Recalculate</button>
-        <span id="price-applied-msg" style="font-size:11px;color:var(--green);align-self:center;display:none">✓ Applied</span>
-      </div>
-    </div>
-    <div style="background:#FFF7F0;border-top:1px solid #FFCCA0;padding:12px 24px;font-size:11px;color:#7A3F00">
-      <strong>Edgeworx Solutions Inc. — Proprietary.</strong> Price adjustments are session-only and not saved between sessions. All outputs remain directional estimates only.
-    </div>
-  </div>
-</div>
-
-
-
 </body>
 </html>
