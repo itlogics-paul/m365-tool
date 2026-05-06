@@ -502,11 +502,11 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
       <div>
         <div class="section-eyebrow">Client Report</div>
         <div class="section-title" style="margin-bottom:0">Microsoft 365 Licensing Review</div>
+        <div id="report-scenario-badge" style="font-size:11px;color:var(--muted);margin-top:4px"></div>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
-        <button class="print-btn" onclick="window.print()" style="display:flex;align-items:center;gap:6px">
-          🖨 <span>Print / Save PDF</span>
-        </button>
+        <button onclick="renderReport()" style="background:var(--teal);color:#fff;border:none;border-radius:5px;padding:8px 14px;font-family:var(--mono);font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px">↻ Refresh</button>
+        <button class="print-btn" onclick="window.print()" style="display:flex;align-items:center;gap:6px">🖨 Print / PDF</button>
       </div>
     </div>
 
@@ -741,6 +741,10 @@ function showTab(id){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   $('tab-'+id).classList.add('active');
   if(id==='advisories') renderAdvisories();
+  if(id==='report' && _state && (window._reportStale !== false)){
+    renderReport();
+    window._reportStale = false;
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -898,8 +902,15 @@ function updateScenario(){
 
   // Always pass org total as denominator so add-on coverage shows correctly
   renderComparisonBars(_state.cur,refTot,mod,refTot);
-  // Also update coverage tab
+  // Update coverage tab
   renderCoverageModeled(mod,refTot);
+  // Re-render report so Section 4 reflects current scenario
+  if(document.getElementById('rpt-content') && document.getElementById('rpt-content').style.display!=='none'){
+    renderReport();
+  } else {
+    // Mark report as stale so it re-renders when tab is opened
+    window._reportStale = true;
+  }
 }
 
 function renderComparisonBars(cur,curTot,mod,modTot){
@@ -1103,6 +1114,163 @@ function buildFeatureMatrix(){
 // ═══════════════════════════════════════════════
 // REPORT
 // ═══════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════
+// BUILD ADVISORY REPORT SECTION (used in both report tab and advisories tab)
+// ═══════════════════════════════════════════════════════
+function buildAdvisoryReport(cur, tot, hasScenario, mod, refTot){
+  const {e5,e3,bp,bs,bb,f1,f3,o365e3,e1}=cur;
+  const enp1=cur.enp1||0, enp2=cur.enp2||0;
+  const dep1=cur.dep1||0, dep2=cur.dep2||0;
+  const dfb=cur.dfb||0, mdca=cur.mdca||0, mdi=cur.mdi||0;
+  const mdo1=cur.mdo1||0, mdo2=cur.mdo2||0;
+  const intune=cur.intune||0, purv=cur.purv||0;
+
+  const ca_cov   = Math.min(e5+e3+bp+enp1+enp2, tot);
+  const edr_cov  = Math.min(e5+dep2, tot);
+  const ep_cov   = Math.min(e5+bp+dfb+dep1+dep2, tot);
+  const mdo_cov  = Math.min(e5+e3+bp+mdo1, tot);
+  const ip_cov   = Math.min(e5+enp2, tot);
+  const itu_cov  = Math.min(e5+e3+bp+f3+intune, tot);
+  const casb_cov = Math.min(e5+mdca, tot);
+  const idi_cov  = Math.min(e5+mdi, tot);
+
+  const advisories = [];
+  function adv(sev, icon, title, impact, risk, remediation, affectedUsers){
+    advisories.push({sev,icon,title,impact,risk,remediation,affectedUsers});
+  }
+
+  if(f1>0) adv('critical','🚨','F1 Users: Zero Security Feature Coverage',
+    `${f1} of ${tot} users (${Math.round(f1/tot*100)}%) have NO Conditional Access, NO endpoint protection, NO Intune.`,
+    'F1 is a web productivity license only. Any F1 user accessing Teams, SharePoint, or email with corporate data is completely unprotected.',
+    'Upgrade F1 → F3 ($10/mo) for Intune + Defender, or Business Premium ($22/mo) for full security. F1 should never be assigned to users with access to sensitive corporate data.',f1);
+
+  const ca_gap=tot-ca_cov;
+  if(ca_gap>0) adv('critical','🚫','Conditional Access Gap: Sign-in Policies Not Enforced for All Users',
+    `${ca_gap} of ${tot} users (${Math.round(ca_gap/tot*100)}%) can bypass all Conditional Access policies.`,
+    'Users without Entra P1 are invisible to CA. They authenticate from any device, any location, regardless of policies configured in the tenant.',
+    'All users require a CA-capable license: E3, Business Premium, E5, or Entra P1 add-on ($6/u/mo).',ca_gap);
+
+  if(edr_cov===0&&tot>0) adv('critical','🔍','No Endpoint Detection & Response (EDR) in Current Licensing',
+    'Zero users have Defender P2. No behavioral threat detection or automated incident response.',
+    'Without EDR, advanced threats, ransomware, and lateral movement go completely undetected until visible damage occurs.',
+    'Add Defender for Endpoint P2 ($5.20/u/mo) for high-risk users. All admin accounts should have EDR coverage.',tot);
+  else if(edr_cov>0&&edr_cov<tot) adv('critical','🔍',`Partial EDR Coverage: ${tot-edr_cov} Users Unprotected`,
+    `Only ${edr_cov} of ${tot} users (${Math.round(edr_cov/tot*100)}%) have Defender P2 endpoint detection.`,
+    'The unprotected users can be compromised and used as pivot points into the broader environment without triggering alerts.',
+    'Expand Defender P2 coverage or upgrade to E5 for users with elevated risk profiles.',tot-edr_cov);
+
+  if(ip_cov===0&&tot>0) adv('critical','🪪','No Identity Protection: Compromised Credentials Invisible',
+    'No users covered by Entra P2. Risky sign-ins generate no alerts and trigger no automated response.',
+    'Credential compromise is the #1 initial attack vector. Without Identity Protection, leaked passwords generate no risk signal. No PIM for admin accounts.',
+    'Add Entra P2 ($9/u/mo) for all admin accounts at minimum. PIM is critical for any account with admin privileges.',tot);
+  else if(ip_cov>0&&ip_cov<tot) adv('critical','🪪',`Identity Protection Partial: ${tot-ip_cov} Users Have No Risk Detection`,
+    `Only ${ip_cov} of ${tot} users have Entra P2. Compromised credentials for the remaining ${tot-ip_cov} generate no risk signals.`,
+    'Attacker sign-ins for uncovered accounts trigger no automated blocks.',
+    'Extend Entra P2 to remaining users, or confirm which accounts are acceptable risk.',tot-ip_cov);
+
+  const ep_gap=tot-ep_cov;
+  if(ep_gap>0) adv('high','🛡️',`Endpoint Protection Gap: ${ep_gap} Users Without Any Defender Coverage`,
+    `${ep_gap} users rely on Windows Defender AV defaults only — no centralized management, no attack surface reduction.`,
+    'E3, O365 E3, Business Standard/Basic, and E1 do not include endpoint protection. No policy enforcement, no threat visibility.',
+    'Add Defender for Business ($3/u/mo, ≤300 users) or Defender for Endpoint P1/P2.',ep_gap);
+
+  const mdo_gap=tot-mdo_cov;
+  if(mdo_gap>0) adv('high','📧',`Email Threat Protection Gap: ${mdo_gap} Users Without Safe Links & Attachments`,
+    `${mdo_gap} users have basic Exchange Online Protection only — no URL detonation, no attachment sandboxing.`,
+    'Email is the #1 threat delivery vector for ransomware. Without MDO P1, zero-day threats reach user inboxes uninspected. Note: MDO P1 now included in M365 E3, Business Premium, and E5.',
+    'Upgrade affected users to M365 E3, Business Premium, or E5. Or add MDO P1 standalone ($2/u/mo).',mdo_gap);
+
+  const itu_gap=tot-itu_cov;
+  if(itu_gap>0) adv('high','📱',`Device Management Gap: ${itu_gap} Users Without Intune`,
+    `${itu_gap} device(s) cannot be enrolled, evaluated for compliance, or remotely wiped.`,
+    'Without Intune, device-based Conditional Access cannot evaluate device health. BYOD devices have no corporate policy enforcement.',
+    'Ensure all users with corporate or BYOD device access have an Intune-capable license.',itu_gap);
+
+  if(casb_cov===0&&tot>0) adv('medium','🌐','No Cloud App Security / CASB: Shadow IT Invisible',
+    'No visibility into unauthorized SaaS application usage across the organization.',
+    'Without Defender for Cloud Apps, the organization cannot detect data movement to unauthorized cloud services or identify risky OAuth permissions.',
+    'Add Defender for Cloud Apps ($3.50/u/mo) or upgrade to E5.',tot);
+
+  if(idi_cov===0&&tot>0) adv('medium','🏷️','No Defender for Identity: On-Premises AD Attacks Undetected',
+    'No monitoring of Active Directory / hybrid identity attack patterns.',
+    'Without Defender for Identity, attacks targeting on-prem AD — pass-the-hash, Kerberoasting, lateral movement — generate no alerts.',
+    'Add Defender for Identity ($3.00/u/mo) or upgrade to E5.',tot);
+
+  if(e5>0&&e5<tot) adv('medium','⚠️',`Partial E5: ${tot-e5} Users Outside Advanced Protection`,
+    `E5 features apply to ${e5} users only. The remaining ${tot-e5} lack Defender P2, Identity Protection, Insider Risk, and CASB.`,
+    'The most common source of false security assumptions. Features configured at tenant level do not apply universally.',
+    'Either expand E5 or build a targeted add-on strategy for non-E5 users.',tot-e5);
+
+  if(o365e3>0) adv('medium','📋',`Office 365 E3: ${o365e3} Users on Productivity-Only License`,
+    `${o365e3} users on O365 E3 have no CA, no endpoint protection, no Intune, no Identity Protection.`,
+    'O365 E3 has no M365 security features. Users are equivalent to E1 from a security perspective despite higher cost.',
+    'Migrate to M365 E3 ($39/u/mo) or Business Premium ($22/u/mo, ≤300 users). Both include CA, Intune, and Defender.',o365e3);
+
+  if(advisories.length===0){
+    return `<div style="background:#0B1C2C;border-radius:10px;padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
+      <div style="font-size:24px">✅</div>
+      <div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#E85D04;margin-bottom:4px">Security Advisories</div>
+        <div style="font-size:14px;font-weight:600;color:#fff">No critical security gaps identified</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:2px">All major security features have coverage based on reported license quantities. Validate feature activation in the tenant.</div>
+      </div>
+    </div>`;
+  }
+
+  const sevGroups={
+    critical:{label:'Critical',color:'#C62828',bg:'#FFF0F0',border:'#FFCDD2',items:[]},
+    high:    {label:'High Risk',color:'#E65100',bg:'#FFF8EE',border:'#FFD180',items:[]},
+    medium:  {label:'Medium',   color:'#F57F17',bg:'#FFFDE7',border:'#FFE082',items:[]},
+  };
+  advisories.forEach(a=>sevGroups[a.sev]?.items.push(a));
+
+  let html='';
+  // Section header
+  const stateDesc = hasScenario
+    ? '<span style="color:#009B86;font-weight:600">Modeled Scenario</span> — gaps remaining after scenario is applied'
+    : '<span style="font-weight:600">Current State</span>';
+  html+=`<div style="background:#0B1C2C;border-radius:10px 10px 0 0;padding:16px 24px;margin-bottom:0">
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#E85D04;margin-bottom:4px">Security Advisories</div>
+    <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:3px">Licensing-Based Security Risk Register</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.5)">Analyzing: ${stateDesc} · Not a configuration audit</div>
+  </div>`;
+
+  ['critical','high','medium'].forEach(sev=>{
+    const g=sevGroups[sev];
+    if(g.items.length===0) return;
+    const headerBg=sev==='critical'?'#8B0000':sev==='high'?'#6D3A00':'#5D4037';
+    html+=`<div style="border:1px solid ${g.border};border-top:none;overflow:hidden${sev==='medium'?';border-radius:0 0 10px 10px':''}">
+      <div style="background:${headerBg};padding:10px 20px;display:flex;align-items:center;gap:8px">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#fff">${g.label} — ${g.items.length} finding${g.items.length!==1?'s':''}</div>
+      </div>`;
+    g.items.forEach((a,i)=>{
+      html+=`<div style="padding:14px 20px;background:${i%2===0?g.bg:'#fff'};border-top:1px solid ${g.border}">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:6px">
+          <div style="font-size:12.5px;font-weight:700;color:${g.color}">${a.icon} ${a.title}</div>
+          <div style="background:${g.color};color:#fff;border-radius:4px;padding:2px 8px;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;white-space:nowrap;flex-shrink:0">${a.affectedUsers} users</div>
+        </div>
+        <div style="font-size:12px;color:#1C2B3A;margin-bottom:5px;font-weight:500">${a.impact}</div>
+        <div style="font-size:11.5px;color:#607080;line-height:1.6;padding:8px 12px;background:rgba(0,0,0,.03);border-left:3px solid ${g.color};border-radius:0 4px 4px 0;margin-bottom:6px">${a.risk}</div>
+        <div style="font-size:11.5px;color:#00695C;font-style:italic">→ ${a.remediation}</div>
+      </div>`;
+    });
+    html+='</div>';
+  });
+
+  // Best practices CTA at bottom
+  html+=`<div style="background:#0B1C2C;border-radius:0 0 10px 10px;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:16px;border-radius:10px">
+    <div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#E85D04;margin-bottom:5px">Recommended Next Engagement</div>
+      <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px">M365 Security Best Practices Assessment</div>
+      <div style="font-size:11.5px;color:rgba(255,255,255,.5);line-height:1.6;max-width:520px">Validates that Conditional Access, Defender, Intune, and identity settings are correctly configured and protecting your environment. Delivered by Itlogic Solutions Inc. — independent, vendor-neutral.</div>
+    </div>
+    <div style="background:#E85D04;color:#fff;border-radius:7px;padding:11px 20px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;white-space:nowrap;flex-shrink:0">Ask Us →</div>
+  </div>`;
+
+  return `<div style="margin-bottom:16px">${html}</div>`;
+}
+
 function renderReport(){
   const cur=getCurrent(), tot=totalUsers(cur), mo=calcCost(cur);
   const cpu=tot>0?mo/tot:0;
@@ -1113,6 +1281,14 @@ function renderReport(){
   const modCpu=modCostBase>0?modMo/modCostBase:0;
   const saveMo=mo-modMo, savePct=mo>0?Math.round(saveMo/mo*100):0;
   const hasScenario=Object.values(mod).some(v=>v>0);
+
+  // Update toolbar badge
+  const scenBadge = document.getElementById('report-scenario-badge');
+  if(scenBadge){
+    scenBadge.innerHTML = hasScenario
+      ? `<span style="color:var(--teal);font-weight:600">✓ Scenario included</span> — showing cost savings and coverage comparison`
+      : `<span style="color:var(--muted2)">No scenario modeled</span> — go to Scenario Model tab to add an alternative licensing mix`;
+  }
 
   const org=$('orgName').value||'[Client Name]';
   const prep=$('preparedBy').value||'Edgeworx Solutions Inc.';
@@ -1378,6 +1554,19 @@ function renderReport(){
     `,'#F0FAF8','#80CBC4');
   }
 
+  // SECTION 4 placeholder if no scenario
+  if(!hasScenario){
+    r+=section('Section 4','Cost Optimization Opportunity',`
+      <div style="display:flex;align-items:center;gap:16px;padding:16px;background:#F4F8FB;border-radius:8px;border:2px dashed #B8CCE0">
+        <div style="font-size:28px;flex-shrink:0">⇄</div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:#0A0F14;margin-bottom:4px">No scenario modeled yet</div>
+          <div style="font-size:13px;color:#607080;line-height:1.6">Go to the <strong>Scenario Model</strong> tab to build an alternative licensing mix. The report will automatically show the cost savings, per-user cost comparison, and coverage impact once a scenario is entered.</div>
+        </div>
+      </div>
+    `);
+  }
+
   // SECTION 5 — STRATEGY
   const has_e5_mod=mod.e5>0,has_bp_mod=mod.bp>0,has_e3_mod=mod.e3>0;
   const stratRows=[];
@@ -1426,10 +1615,13 @@ function renderReport(){
   </div>`;
 
   // FOOTER
-  r+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:#F4F8FB;border:1px solid #D4E2EC;border-radius:8px;font-size:11px;color:#8A9FB0">
-    <span>Prepared by <strong style="color:#0A0F14">${prep}</strong> · M365 Licensing Strategy Tool · Proprietary</span>
-    <span>All pricing is reference/estimate only · ${today}</span>
+  r+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:#0B1C2C;border-radius:8px;font-size:11px;color:rgba(255,255,255,.5)">
+    <span>Prepared by <strong style="color:#fff">${prep}</strong> &nbsp;·&nbsp; M365 Licensing Strategy Tool &nbsp;·&nbsp; <strong style="color:#E85D04;letter-spacing:.05em">CONFIDENTIAL</strong></span>
+    <span>All pricing is reference/estimate only &nbsp;·&nbsp; ${today}</span>
   </div>`;
+
+  // ── APPEND SECURITY ADVISORIES ──
+  r += buildAdvisoryReport(cur, tot, hasScenario, mod, refTot);
 
   const container = document.getElementById('visual-report');
   if(container) container.innerHTML = r;
@@ -1614,8 +1806,8 @@ $('pricing-modal')?.addEventListener('click', function(e){
 // ═══════════════════════════════════════════════════════════════
 function renderAdvisories(){
   if(!_state){ return; }
-  $('adv-placeholder').style.display='none';
-  $('adv-content').style.display='block';
+  document.getElementById('adv-placeholder').style.display='none';
+  document.getElementById('adv-content').style.display='block';
 
   // Use scenario if modeled, else current state
   const _hasSc=Object.values(getModeled()).some(v=>v>0);
@@ -1624,174 +1816,30 @@ function renderAdvisories(){
   // Update header label
   const stateLabel = document.getElementById('adv-state-label');
   if(stateLabel){
-    const hasScen=Object.values(getModeled()).some(v=>v>0);
-    stateLabel.innerHTML = hasScen
+    stateLabel.innerHTML = _hasSc
       ? '<strong style="color:#009B86">modeled scenario</strong> (gaps remaining after scenario is applied)'
       : '<strong>current license inventory</strong>';
   }
 
-  // analysisLic set above (scenario if modeled, else current)
   const cur=analysisLic, tot=_state.tot;
-  const {e5,e3,bp,bs,bb,f1,f3,o365e3,e1}=cur;
-  const enp1=cur.enp1||0, enp2=cur.enp2||0;
-  const dep1=cur.dep1||0, dep2=cur.dep2||0;
-  const dfb=cur.dfb||0, mdca=cur.mdca||0, mdi=cur.mdi||0;
-  const mdo1=cur.mdo1||0, mdo2=cur.mdo2||0;
-  const intune=cur.intune||0, purv=cur.purv||0;
+  const mod=getModeled(), refTot=tot;
 
-  const ca_cov  = Math.min(e5+e3+bp+enp1+enp2, tot);
-  const edr_cov = Math.min(e5+dep2, tot);
-  const ep_cov  = Math.min(e5+bp+dfb+dep1+dep2, tot);
-  const mdo_cov = Math.min(e5+e3+bp+mdo1, tot);
-  const ip_cov  = Math.min(e5+enp2, tot);
-  const itu_cov = Math.min(e5+e3+bp+f3+intune, tot);
-  const casb_cov= Math.min(e5+mdca, tot);
-  const idi_cov = Math.min(e5+mdi, tot);
-
-  const advisories = [];
-
-  function adv(sev, icon, id, title, impact, risk, remediation, affectedUsers){
-    advisories.push({sev,icon,id,title,impact,risk,remediation,affectedUsers});
-  }
-
-  // ── CRITICAL ──
-  if(f1>0) adv('critical','🚨','F1_NOSEC',
-    'F1 Users: Zero Security Feature Coverage',
-    `${f1} of ${tot} users (${Math.round(f1/tot*100)}%) have NO Conditional Access, NO endpoint protection, NO Intune, and NO email sandboxing.`,
-    'F1 is a web productivity license only. Any F1 user accessing Teams, SharePoint, or email with corporate data is completely unprotected. A single compromised F1 account has the same access rights as any other user.',
-    'Upgrade F1 → F3 ($10/mo, adds Intune + Defender) or Business Premium ($22/mo, full security). F1 should never be assigned to users who access sensitive corporate data.',
-    f1);
-
-  const ca_gap = tot - ca_cov;
-  if(ca_gap > 0) adv('critical','🚫','CA_GAP',
-    'Conditional Access Gap: Sign-in Policies Not Enforced for All Users',
-    `${ca_gap} of ${tot} users (${Math.round(ca_gap/tot*100)}%) can bypass all Conditional Access policies.`,
-    'Without Entra P1, users on Business Standard/Basic, O365 E1, or F1 are invisible to Conditional Access. They can authenticate from any unmanaged device, any location, at any time — regardless of policies configured in the tenant. Legacy authentication cannot be blocked for these users.',
-    'All users require a CA-capable license: E3, Business Premium, E5, or Entra ID P1 add-on ($6/u/mo). This is foundational to a Zero Trust security posture.',
-    ca_gap);
-
-  if(edr_cov === 0 && tot > 0) adv('critical','🔍','NO_EDR',
-    'No Endpoint Detection & Response (EDR) in Current Licensing',
-    'Zero users are covered by Defender for Endpoint P2. The organization has no behavioral threat detection or automated incident response capability.',
-    'Without EDR, advanced persistent threats, ransomware, and lateral movement go completely undetected until visible damage occurs. There is no automated investigation, no threat analytics, and no ability to hunt for indicators of compromise across endpoints.',
-    'Add Defender for Endpoint P2 ($5.20/u/mo) for high-risk users at minimum. All admin accounts, users with access to sensitive systems, and privileged identities should have EDR coverage.',
-    tot);
-  else if(edr_cov > 0 && edr_cov < tot) adv('critical','🔍','PARTIAL_EDR',
-    `Partial EDR Coverage: ${tot-edr_cov} Users Unprotected`,
-    `Only ${edr_cov} of ${tot} users (${Math.round(edr_cov/tot*100)}%) have Defender P2 endpoint detection.`,
-    'Attackers consistently target the weakest endpoint. The ${tot-edr_cov} users without EDR are invisible to advanced threat detection — their devices can be compromised and used as pivot points into the broader environment without triggering any alerts.',
-    'Expand Defender P2 coverage or evaluate E5 upgrade for users with elevated risk profiles. At minimum ensure all admin, finance, and data-access accounts have EDR.',
-    tot-edr_cov);
-
-  if(ip_cov === 0 && tot > 0) adv('critical','🪪','NO_IDP',
-    'No Identity Protection: Compromised Credentials Invisible',
-    'No users are covered by Entra ID P2 Identity Protection. Risky sign-ins generate no alerts and trigger no automated response.',
-    'Credential compromise is the #1 initial attack vector. Without Identity Protection, a user password leaked in a breach or obtained via phishing generates no risk signal. An attacker can sign in repeatedly from unusual locations with no automated block. Privileged Identity Management (PIM) is also unavailable.',
-    'Add Entra P2 ($9/u/mo) for all admin accounts at absolute minimum. PIM alone is critical for any account with admin privileges. Ideally deploy to all users for full risk-based Conditional Access.',
-    tot);
-
-  // ── HIGH ──
-  const ep_gap = tot - ep_cov;
-  if(ep_gap > 0) adv('high','🛡️','EP_GAP',
-    `Endpoint Protection Gap: ${ep_gap} Users Without Any Defender Coverage`,
-    `${ep_gap} users rely on Windows Defender AV defaults only — no centralized management, no attack surface reduction, no threat analytics.`,
-    'E3, O365 E3, Business Standard/Basic, and E1 do not include endpoint protection. Users on these tiers have default Windows AV only. There is no policy enforcement, no visibility into threat events, and no central management of endpoint security.',
-    'Add Defender for Business ($3/u/mo, ≤300 users) or Defender for Endpoint P1/P2. Note that Business Premium already includes Defender for Business.',
-    ep_gap);
-
-  const mdo_gap = tot - mdo_cov;
-  if(mdo_gap > 0) adv('high','📧','MDO_GAP',
-    `Email Threat Protection Gap: ${mdo_gap} Users Without Safe Links & Attachments`,
-    `${mdo_gap} users have basic Exchange Online Protection only — no URL detonation, no attachment sandboxing.`,
-    'Email remains the #1 threat delivery vector for ransomware and phishing. Without MDO P1, malicious URLs are not detonated in a sandbox before delivery, and attachments are not scanned in a safe environment. Zero-day threats in email reach user inboxes without inspection. Note: MDO P1 is now included in M365 E3, Business Premium, and E5 as of 2026.',
-    'Upgrade affected users to M365 E3, Business Premium, or E5 — all include MDO P1. Alternatively, add MDO P1 standalone add-on ($2/u/mo) for users on lower tiers.',
-    mdo_gap);
-
-  const itu_gap = tot - itu_cov;
-  if(itu_gap > 0) adv('high','📱','INTUNE_GAP',
-    `Device Management Gap: ${itu_gap} Users Without Intune`,
-    `${itu_gap} user devices cannot be enrolled in MDM, evaluated for compliance, or remotely wiped.`,
-    'Without Intune, device-based Conditional Access cannot evaluate device health for these users — they can access corporate data from unmanaged, non-compliant, or compromised devices. BYOD devices have no corporate policy enforcement. Lost or stolen devices cannot be remotely wiped.',
-    'Ensure all users with corporate or BYOD device access have an Intune-capable license. F1→F3 is the lowest-cost path for frontline workers. Business Standard→Premium adds Intune.',
-    itu_gap);
-
-  // ── MEDIUM ──
-  if(casb_cov === 0 && tot > 0) adv('medium','🌐','NO_CASB',
-    'No Cloud App Security / CASB: Shadow IT Invisible',
-    'No visibility into unauthorized SaaS application usage across the organization.',
-    'Without Defender for Cloud Apps (CASB), the organization cannot detect or control data movement to unauthorized cloud services, identify risky OAuth app permissions, or enforce session-based access controls for cloud apps. Shadow IT — employees using personal Dropbox, Google Drive, or other unsanctioned apps — is completely invisible.',
-    'Add Defender for Cloud Apps ($3.50/u/mo) or upgrade to E5. Particularly important for organizations with data residency, compliance, or IP protection requirements.',
-    tot);
-
-  if(idi_cov === 0 && tot > 0) adv('medium','🏷️','NO_MDI',
-    'No Defender for Identity: On-Premises AD Attacks Undetected',
-    'No monitoring of Active Directory / hybrid identity attack patterns.',
-    'Without Defender for Identity, attacks targeting on-premises Active Directory — including pass-the-hash, pass-the-ticket, Kerberoasting, and lateral movement — generate no alerts. Attackers who compromise an on-prem account can move laterally to Azure AD without detection.',
-    'Add Defender for Identity ($3.00/u/mo) or upgrade to E5. Critical for organizations with hybrid identity (on-premises AD synced to Entra ID).',
-    tot);
-
-  if(e5>0 && e5<tot) adv('medium','⚠️','PARTIAL_E5',
-    `Partial E5 Deployment: ${tot-e5} Users Outside Advanced Protection`,
-    `E5 security features apply to ${e5} users only. The remaining ${tot-e5} users do not have Defender P2, Identity Protection, Insider Risk, Cloud App Security, or Sentinel connectors — even if these features appear configured in the admin center.`,
-    'The most common source of false security assumptions in M365. Features configured at the tenant level do not apply universally — they are scoped to users holding the required license. A small E5 deployment alongside a large E3 or Business population leaves the majority unprotected by advanced features.',
-    'Either expand E5 to all users requiring advanced protection, or build a targeted add-on strategy for non-E5 users covering the specific features they need.',
-    tot-e5);
-
-  if(o365e3 > 0) adv('medium','📋','O365E3_NOSEC',
-    `Office 365 E3 Users: Productivity License Only — No Security Features`,
-    `${o365e3} users on O365 E3 have no Conditional Access, no endpoint protection, no Intune, and no Identity Protection.`,
-    'O365 E3 is a productivity-only license. It does not include any of the M365 security features. Users on O365 E3 are equivalent to E1 from a security perspective, despite paying significantly more. Commonly assigned by mistake when M365 E3 was intended.',
-    'Migrate O365 E3 users to M365 E3 ($39/u/mo) for full security stack, or to Business Premium ($22/u/mo) for orgs ≤300 users — both include Conditional Access, Intune, and Defender. Note: M365 E3 now includes MDO P1 as of 2026.',
-    o365e3);
-
-  // ── BUILD HTML ──
-  const sevGroups = {
-    critical:{label:'Critical', color:'var(--red)', bg:'#FFF0F0', border:'#FFCDD2', icon:'🚨', items:[]},
-    high:    {label:'High Risk', color:'#B03020',  bg:'#FFF8EE', border:'#FFD180', icon:'⚠️', items:[]},
-    medium:  {label:'Medium',    color:'var(--amber)', bg:var_gold_l='#FFFDE7', border:'#FFE082', icon:'📋', items:[]},
-    ok:      {label:'No Issues', color:'var(--green)', bg:var_gl='#E8F5E9', border:'#C8E6C9', icon:'✅', items:[]},
-  };
-
-  advisories.forEach(a=> sevGroups[a.sev]?.items.push(a));
-
-  // If no critical/high, add a positive note
-  if(sevGroups.critical.items.length===0 && sevGroups.high.items.length===0){
-    sevGroups.ok.items.push({
-      title:'No Critical or High Security Gaps Identified',
-      impact:'Current licensing provides strong security coverage across the organization.',
-      risk:'',remediation:'Continue to validate feature configuration in the tenant. Consider a Security Best Practices Assessment to confirm features are correctly activated.',
-      affectedUsers:0
-    });
-  }
-
-  ['critical','high','medium','ok'].forEach(sev=>{
-    const g = sevGroups[sev];
-    const el = $('adv-'+sev);
-    if(!el) return;
-    if(g.items.length===0){ el.innerHTML=''; return; }
-
-    let html=`<div class="card"><div class="card-head" style="background:${sev==='critical'?'#8B0000':sev==='high'?'#6D3A00':sev==='medium'?'#5D4037':'var(--green)'}">
-      <div class="card-head-left"><div class="card-icon">${g.icon}</div>
-      <div><div class="card-title">${g.label} Security Advisories</div>
-      <div class="card-sub">${g.items.length} finding${g.items.length!==1?'s':''}</div></div></div></div>
-      <div class="card-body" style="padding:0">`;
-
-    g.items.forEach((a,i)=>{
-      const bgcol = sev==='critical'?'#FFF0F0':sev==='high'?'#FFFBF0':sev==='medium'?'#FFFDE7':'#F1F8E9';
-      html+=`<div style="padding:16px 20px;border-bottom:1px solid var(--border2);background:${i%2===0?bgcol:'#fff'}">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:8px">
-          <div style="font-family:var(--mono);font-size:13px;font-weight:700;color:${g.color}">${a.title||a.id}</div>
-          ${a.affectedUsers>0?`<div style="background:${g.color};color:#fff;border-radius:4px;padding:2px 10px;font-family:var(--mono);font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0">${a.affectedUsers} users</div>`:''}
-        </div>
-        ${a.impact?`<div style="font-size:12.5px;font-weight:600;color:var(--ink2);margin-bottom:6px">📊 Impact: ${a.impact}</div>`:''}
-        ${a.risk?`<div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:8px;padding:8px 12px;background:rgba(0,0,0,.03);border-radius:6px;border-left:3px solid ${g.color}">⚡ ${a.risk}</div>`:''}
-        ${a.remediation?`<div style="font-size:12px;color:var(--teal-b);line-height:1.55;font-style:italic">→ ${a.remediation}</div>`:''}
-      </div>`;
-    });
-    html+='</div></div>';
-    el.innerHTML=html;
+  // Build advisory HTML using shared function
+  const container = document.getElementById('adv-content');
+  // Replace the placeholder sections with built content
+  const html = buildAdvisoryReport(cur, tot, _hasSc, mod, refTot);
+  // Insert into the adv sections
+  const wrapper = document.createElement('div');
+  wrapper.innerHTML = html;
+  // Clear old severity divs and replace
+  ['adv-critical','adv-high','adv-medium','adv-ok'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.innerHTML='';
   });
+  const critEl=document.getElementById('adv-critical');
+  if(critEl) critEl.innerHTML=html;
 }
+
 
 // Wire button via addEventListener as backup
 (function(){
