@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>M365 Licensing Strategy Tool</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -291,7 +294,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         </div>
 
         <span class="lic-section">Enterprise Licenses</span>
-        <div class="lic-row"><div class="lic-info"><div class="lic-name">Microsoft 365 E5<span class="pill p-ent">Enterprise</span></div><div class="lic-meta">$57.00/u/mo · Full security suite</div></div><input class="qty" type="number" id="q_e5" min="0" value="0" oninput="liveUpdate()"></div>
+        <div class="lic-row"><div class="lic-info"><div class="lic-name">Microsoft 365 E5<span class="pill p-ent">Enterprise</span></div><div class="lic-meta">$57.00/u/mo · Full security suite</div></div><input class="qty" type="number" id="q_e5" min="0" value="0" oninput="liveUpdate()" autocomplete="off"></div>
         <div class="lic-row"><div class="lic-info"><div class="lic-name">Microsoft 365 E3<span class="pill p-ent">Enterprise</span></div><div class="lic-meta">$36.00/u/mo · Core + compliance</div></div><input class="qty" type="number" id="q_e3" min="0" value="0" oninput="liveUpdate()"></div>
         <div class="lic-row"><div class="lic-info"><div class="lic-name">Office 365 E3<span class="pill p-ent">Enterprise</span></div><div class="lic-meta">$23.00/u/mo · Productivity only</div></div><input class="qty" type="number" id="q_o365e3" min="0" value="0" oninput="liveUpdate()"></div>
         <div class="lic-row"><div class="lic-info"><div class="lic-name">Office 365 E1<span class="pill p-ent">Enterprise</span></div><div class="lic-meta">$10.00/u/mo · Web + email only</div></div><input class="qty" type="number" id="q_e1" min="0" value="0" oninput="liveUpdate()"></div>
@@ -538,7 +541,7 @@ const MATRIX_DATA = [
 const $=id=>document.getElementById(id);
 const qv=k=>Math.max(0,parseInt($('q_'+k).value)||0);
 const mv=k=>Math.max(0,parseInt($('m_'+k).value)||0);
-const fmt=n=>'$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt=n=>{ if(window._fmtPatch) return window._fmtPatch(n); return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); };
 const fmtK=n=>n>=10000?'$'+(n/1000).toFixed(1)+'k':fmt(n);
 const pct=(a,b)=>b>0?Math.round(a/b*100):0;
 const clamp=(v,mn,mx)=>Math.max(mn,Math.min(mx,v));
@@ -1284,7 +1287,14 @@ function copyReport(){
   b.textContent='✓ Copied!';setTimeout(()=>b.textContent=o,2000);
 }
 
-// init
+// ── INIT ──
+// Clear all inputs on load (prevents browser autocomplete restoring stale values)
+window.addEventListener('load', function(){
+  document.querySelectorAll('input.qty').forEach(el=>{ el.value='0'; el.setAttribute('autocomplete','off'); });
+  const org=$('orgName'); if(org) org.value='';
+  window._fmtPatch=null; window._activeCurrency='USD';
+});
+buildMatrix();
 </script>
 
 <!-- PRICING ADMIN MODAL -->
@@ -1412,12 +1422,36 @@ function buildPriceTable(){
 }
 
 function resetPrices(){
+  // Reset all prices to base
   Object.entries(BASE_PRICES).forEach(([k,v])=>{
     const el=$('price_'+k);
     if(el) el.value=v.toFixed(2);
+    if(P[k]) P[k].p = v;
   });
-  Object.keys(P).forEach(k=>{ P[k].p = BASE_PRICES[k]||P[k].p; });
+  // Reset currency to USD
+  $('curr-usd').checked = true;
+  $('curr-cad').checked = false;
+  $('fx-rate').value = '1.36';
+  CURRENCY = 'USD';
+  FX_RATE = 1.36;
+  window._fmtPatch = null;
+  window._activeCurrency = 'USD';
+  window._activeFX = 1;
+  // Reset all lic-meta labels back to USD
+  Object.keys(P).forEach(k=>{
+    const metaEl = document.querySelector(`#q_${k}`)?.closest('.lic-row')?.querySelector('.lic-meta');
+    if(metaEl){
+      const t = metaEl.textContent;
+      const rest = t.includes('·') ? t.slice(t.indexOf('·')) : '';
+      metaEl.textContent = `$${BASE_PRICES[k].toFixed(2)}/u/mo${rest}`;
+    }
+    const metaMod = document.querySelector(`#m_${k}`)?.closest('.lic-row')?.querySelector('.lic-meta');
+    if(metaMod) metaMod.textContent = `$${BASE_PRICES[k].toFixed(2)}/u/mo`;
+  });
+  // Re-run if analysis exists
+  if(window._state){ runAll(); if($('scen-content').style.display!=='none') updateScenario(); renderReport(); }
   buildPriceTable();
+  updateCurrencyHighlight();
 }
 
 function applyPrices(){
@@ -1442,15 +1476,25 @@ function applyPrices(){
     if(metaMod){ metaMod.textContent=`${sym}${displayP.toFixed(2)}/u/mo`; }
   });
 
-  // Update currency badge
-  const badge = document.querySelector('.notice strong');
-  // Patch global fmt to use new currency
-  window._fmtOverride = fmtCurr;
-  
-  // Re-run analysis if data exists
+  // Store active currency globally so fmt() uses it
+  window._activeCurrency = CURRENCY;
+  window._activeFX = FX_RATE;
+
+  // Patch the main fmt function to use active currency
+  // We reassign it on the window so runAll() picks it up
+  window._fmtPatch = function(n){
+    const sym = CURRENCY==='CAD'?'CA$':'$';
+    return sym+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+  };
+
+  // Re-run full analysis so all outputs rerender with new currency/prices
   if(window._state){
     runAll();
     if($('scen-content').style.display!=='none') updateScenario();
+    if($('cov-content').style.display!=='none'){
+      renderCoverageTab(_state.cur, _state.tot);
+    }
+    renderReport();
   }
 
   const msg=$('price-applied-msg');
@@ -1460,12 +1504,14 @@ function applyPrices(){
   buildPriceTable();
 }
 
-// Override fmt globally when currency changes
-const _origFmt = window.fmt;
-Object.defineProperty(window,'fmt',{
-  get(){ return window._fmtOverride || _origFmt; },
-  set(v){ window._origFmt_val=v; }
-});
+// Currency symbol helper — used by applyPrices to reformat all outputs
+window._activeCurrency = 'USD';
+window._activeFX = 1;
+window.getActiveSym = function(){ return window._activeCurrency==='CAD'?'CA$':'$'; };
+window.fmtActive = function(n){
+  const sym = window._activeCurrency==='CAD'?'CA$':'$';
+  return sym+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+};
 
 // Close modal on backdrop click
 $('pricing-modal')?.addEventListener('click', function(e){
