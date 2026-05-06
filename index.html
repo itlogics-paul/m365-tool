@@ -542,14 +542,17 @@ const $=id=>document.getElementById(id);
 const qv=k=>Math.max(0,parseInt($('q_'+k).value)||0);
 const mv=k=>Math.max(0,parseInt($('m_'+k).value)||0);
 const fmt=n=>{ if(window._fmtPatch) return window._fmtPatch(n); return '$'+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); };
-const fmtK=n=>n>=10000?'$'+(n/1000).toFixed(1)+'k':fmt(n);
+const fmtK=n=>{ if(window._fmtPatch){ const sym=window._activeCurrency==='CAD'?'CA$':'$'; return n>=10000?sym+(n/1000).toFixed(1)+'k':window._fmtPatch(n); } return n>=10000?'$'+(n/1000).toFixed(1)+'k':fmt(n); };
 const pct=(a,b)=>b>0?Math.round(a/b*100):0;
 const clamp=(v,mn,mx)=>Math.max(mn,Math.min(mx,v));
 
 function getCurrent(){const o={};Object.keys(P).forEach(k=>o[k]=qv(k));return o;}
 function getModeled(){const o={};Object.keys(P).forEach(k=>o[k]=mv(k));return o;}
 function totalUsers(lic){return NON_ADDON.reduce((s,k)=>s+(lic[k]||0),0);}
-function calcCost(lic){return Object.entries(lic).reduce((s,[k,v])=>s+(P[k]?P[k].p*v:0),0);}
+function calcCost(lic){
+  const fx=(window._activeCurrency==='CAD'&&window._activeFX)?window._activeFX:1;
+  return Object.entries(lic).reduce((s,[k,v])=>s+(P[k]?P[k].p*v*fx:0),0);
+}
 
 let _state = null; // holds last run state
 
@@ -1449,6 +1452,13 @@ function resetPrices(){
     if(metaMod) metaMod.textContent = `$${BASE_PRICES[k].toFixed(2)}/u/mo`;
   });
   // Re-run if analysis exists
+  // Reset price labels back to USD display
+  Object.keys(P).forEach(k=>{
+    const metaEl = document.querySelector(`#q_${k}`)?.closest('.lic-row')?.querySelector('.lic-meta');
+    if(metaEl){ const t=metaEl.textContent; const suffix=t.includes('·')?t.slice(t.indexOf('·')):''; metaEl.textContent=`$${BASE_PRICES[k].toFixed(2)}/u/mo${suffix}`; }
+    const metaMod = document.querySelector(`#m_${k}`)?.closest('.lic-row')?.querySelector('.lic-meta');
+    if(metaMod) metaMod.textContent=`$${BASE_PRICES[k].toFixed(2)}/u/mo`;
+  });
   if(window._state){ runAll(); if($('scen-content').style.display!=='none') updateScenario(); renderReport(); }
   buildPriceTable();
   updateCurrencyHighlight();
@@ -1465,35 +1475,34 @@ function applyPrices(){
   });
 
   // Update all lic-meta price labels in the UI
+  // Update all price labels to show converted currency
+  const fx2 = CURRENCY==='CAD' ? FX_RATE : 1;
+  const sym2 = CURRENCY==='CAD' ? 'CA$' : '$';
   Object.keys(P).forEach(k=>{
-    const sym = CURRENCY==='CAD'?'CA$':'$';
-    const displayP = toDisplay(P[k].p);
-    // Update current state input labels
+    const displayP = (P[k].p * fx2).toFixed(2);
     const metaEl = document.querySelector(`#q_${k}`)?.closest('.lic-row')?.querySelector('.lic-meta');
-    if(metaEl){ const t=metaEl.textContent; metaEl.textContent=`${sym}${displayP.toFixed(2)}/u/mo${t.includes('·')?t.slice(t.indexOf('·')):''}` }
-    // Update scenario input labels  
+    if(metaEl){
+      const t=metaEl.textContent;
+      const suffix = t.includes('·') ? t.slice(t.indexOf('·')) : '';
+      metaEl.textContent=`${sym2}${displayP}/u/mo${suffix}`;
+    }
     const metaMod = document.querySelector(`#m_${k}`)?.closest('.lic-row')?.querySelector('.lic-meta');
-    if(metaMod){ metaMod.textContent=`${sym}${displayP.toFixed(2)}/u/mo`; }
+    if(metaMod) metaMod.textContent=`${sym2}${displayP}/u/mo`;
   });
 
-  // Store active currency globally so fmt() uses it
+  // ── SET PATCH FIRST before any rendering ──
   window._activeCurrency = CURRENCY;
   window._activeFX = FX_RATE;
-
-  // Patch the main fmt function to use active currency
-  // We reassign it on the window so runAll() picks it up
   window._fmtPatch = function(n){
     const sym = CURRENCY==='CAD'?'CA$':'$';
-    return sym+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const converted = CURRENCY==='CAD' ? n : n; // prices already converted via P[k].p
+    return sym+converted.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
   };
 
-  // Re-run full analysis so all outputs rerender with new currency/prices
+  // NOW re-run — fmt() and fmtK() will use the patch throughout
   if(window._state){
     runAll();
     if($('scen-content').style.display!=='none') updateScenario();
-    if($('cov-content').style.display!=='none'){
-      renderCoverageTab(_state.cur, _state.tot);
-    }
     renderReport();
   }
 
