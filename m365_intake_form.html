@@ -8,14 +8,14 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --navy:#0B1C2C;
-  --navy2:#152535;
-  --navy3:#1A3347;
+  --navy:#1A2B3C;
+  --navy2:#243447;
+  --navy3:#2E4460;
   --ew-orange:#E85D04;
   --ew-orange-l:#FFF3EC;
-  --teal:#009B86;
+  --teal:#4ABFB0;
   --white:#FFFFFF;
-  --ink:#0A0F14;
+  --ink:#1C2B3A;
   --muted:#607080;
   --muted2:#8A9FB0;
   --border:#D4E2EC;
@@ -42,7 +42,7 @@ body{ max-width:860px; margin:0 auto; padding:0 20px 60px; }
   display:flex;
   align-items:center;
   justify-content:space-between;
-  border-bottom:3px solid var(--ew-orange);
+  border-bottom:3px solid var(--orange);
   position:sticky;
   top:0;
   z-index:100;
@@ -57,7 +57,7 @@ body{ max-width:860px; margin:0 auto; padding:0 20px 60px; }
   text-align:right;
   line-height:1.6;
 }
-.masthead-right span{ color:var(--ew-orange); display:block; margin-bottom:2px; }
+.masthead-right span{ color:var(--orange); display:block; margin-bottom:2px; }
 
 /* ── COVER ── */
 .cover{
@@ -81,7 +81,7 @@ body{ max-width:860px; margin:0 auto; padding:0 20px 60px; }
   font-size:10px;
   font-weight:600;
   letter-spacing:.16em;
-  color:var(--ew-orange);
+  color:var(--orange);
   text-transform:uppercase;
   margin-bottom:12px;
 }
@@ -129,7 +129,7 @@ body{ max-width:860px; margin:0 auto; padding:0 20px 60px; }
   border-radius:99px;
   transition:background .3s;
 }
-.progress-step.done{ background:var(--ew-orange); }
+.progress-step.done{ background:var(--orange); }
 .progress-step.active{ background:var(--teal); }
 
 /* ── SECTIONS ── */
@@ -139,7 +139,7 @@ body{ max-width:860px; margin:0 auto; padding:0 20px 60px; }
   font-size:9px;
   font-weight:600;
   letter-spacing:.18em;
-  color:var(--ew-orange);
+  color:var(--orange);
   text-transform:uppercase;
   margin-bottom:6px;
 }
@@ -157,7 +157,7 @@ body{ max-width:860px; margin:0 auto; padding:0 20px 60px; }
 }
 .section-rule{
   height:2px;
-  background:linear-gradient(to right, var(--ew-orange) 120px, var(--border2) 120px);
+  background:linear-gradient(to right, var(--orange) 120px, var(--border2) 120px);
   border-radius:99px;
   margin-bottom:24px;
 }
@@ -183,7 +183,7 @@ label{
   color:var(--navy);
   margin-bottom:6px;
 }
-label .req{ color:var(--ew-orange); margin-left:3px; }
+label .req{ color:var(--orange); margin-left:3px; }
 .field-hint{
   font-size:12px;
   color:var(--muted2);
@@ -204,7 +204,7 @@ input[type=text],input[type=email],input[type=tel],select,textarea{
   transition:border-color .15s, box-shadow .15s;
 }
 input[type=text]:focus,input[type=email]:focus,input[type=tel]:focus,select:focus,textarea:focus{
-  border-color:var(--ew-orange);
+  border-color:var(--orange);
   box-shadow:0 0 0 3px rgba(232,93,4,.12);
 }
 input[type=text]::placeholder,textarea::placeholder{color:var(--border);}
@@ -231,17 +231,17 @@ select{ appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='
   cursor:pointer;
   transition:border-color .12s, background .12s;
 }
-.check-item:hover{ border-color:var(--ew-orange); background:var(--ew-orange-l); }
+.check-item:hover{ border-color:var(--orange); background:var(--orange-l); }
 .check-item input[type=checkbox]{
   width:16px; height:16px; flex-shrink:0; margin-top:1px;
-  accent-color:var(--ew-orange); cursor:pointer;
+  accent-color:var(--orange); cursor:pointer;
 }
 .check-item input[type=radio]{
   width:16px; height:16px; flex-shrink:0; margin-top:1px;
-  accent-color:var(--ew-orange); cursor:pointer;
+  accent-color:var(--orange); cursor:pointer;
 }
 .check-item span{ font-size:13px; color:var(--ink); line-height:1.5; user-select:none; }
-.check-item.checked{ border-color:var(--ew-orange); background:var(--ew-orange-l); }
+.check-item.checked{ border-color:var(--orange); background:var(--orange-l); }
 
 /* ── LICENSE TABLE ── */
 .lic-table-wrap{ margin-bottom:20px; overflow-x:auto; }
@@ -307,7 +307,7 @@ table.lic-table{
   background:#EDF5FF;
 }
 .lic-qty-cell input:focus{
-  border-color:var(--ew-orange);
+  border-color:var(--orange);
   box-shadow:0 0 0 3px rgba(232,93,4,.12);
   outline:none;
 }
@@ -358,7 +358,7 @@ table.lic-table{
   font-size:9px;
 }
 .lic-table tfoot td.total{
-  color:var(--ew-orange);
+  color:var(--orange);
   font-size:14px;
 }
 
@@ -391,7 +391,7 @@ table.lic-table{
   font-weight:700;
   color:var(--navy);
 }
-.total-card.highlight .value{ color:var(--ew-orange); }
+.total-card.highlight .value{ color:var(--orange); }
 
 /* ── SUBMIT / PRINT ── */
 .action-bar{
@@ -415,7 +415,7 @@ table.lic-table{
   transition:all .15s;
 }
 .btn-primary{
-  background:var(--ew-orange);
+  background:var(--orange);
   color:white;
 }
 .btn-primary:hover{ background:#C94E00; }
@@ -440,7 +440,7 @@ table.lic-table{
   font-size:10px;
   font-weight:700;
   letter-spacing:.14em;
-  color:var(--ew-orange);
+  color:var(--orange);
   text-transform:uppercase;
   display:block;
   margin-bottom:6px;
@@ -468,7 +468,7 @@ table.lic-table{
 
 <!-- MASTHEAD -->
 <div class="masthead">
-  <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNDAgNTYiIHdpZHRoPSIyNDAiIGhlaWdodD0iNTYiPgogIDx0aXRsZT5JVGxvZ2ljIFNvbHV0aW9uczwvdGl0bGU+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIxNCIgcj0iOSIgZmlsbD0iIzRBQkZCMCIvPgogIDxjaXJjbGUgY3g9IjEzIiBjeT0iNDYiIHI9IjciIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjkiLz4KICA8Y2lyY2xlIGN4PSI1MSIgY3k9IjQ2IiByPSI3IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC45Ii8+CiAgPGxpbmUgeDE9IjI1IiB5MT0iMjEiIHgyPSIxOCIgeTI9IjQwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIuNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGxpbmUgeDE9IjM5IiB5MT0iMjEiIHgyPSI0NyIgeTI9IjQwIiBzdHJva2U9IiM0QUJGQjAiIHN0cm9rZS13aWR0aD0iMi40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8bGluZSB4MT0iMjAiIHkxPSI0NiIgeDI9IjQ0IiB5Mj0iNDYiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjI4KSIgc3Ryb2tlLXdpZHRoPSIxLjQiIHN0cm9rZS1kYXNoYXJyYXk9IjMgMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGNpcmNsZSBjeD0iMTkiIGN5PSIzMSIgcj0iMyIgZmlsbD0iIzRBQkZCMCIvPgogIDxjaXJjbGUgY3g9IjQ2IiBjeT0iMzEiIHI9IjMiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjgiLz4KICA8dGV4dCB4PSI3MCIgeT0iMjkiIGZvbnQtZmFtaWx5PSInUGx1cyBKYWthcnRhIFNhbnMnLHN5c3RlbS11aSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjIyIiBmb250LXdlaWdodD0iNzAwIiBsZXR0ZXItc3BhY2luZz0iLTAuNCIgZmlsbD0id2hpdGUiPklUbG9naWM8L3RleHQ+CiAgPGxpbmUgeDE9IjcwIiB5MT0iMzQiIHgyPSIxNTQiIHkyPSIzNCIgc3Ryb2tlPSIjNEFCRkIwIiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHRleHQgeD0iNzAiIHk9IjQ4IiBmb250LWZhbWlseT0iJ1BsdXMgSmFrYXJ0YSBTYW5zJyxzeXN0ZW0tdWksc2Fucy1zZXJpZiIgZm9udC1zaXplPSI5IiBmb250LXdlaWdodD0iNTAwIiBsZXR0ZXItc3BhY2luZz0iMi4yIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMzgpIj5TT0xVVElPTlM8L3RleHQ+Cjwvc3ZnPg==" alt="ITlogic Solutions Inc.">
+  <a href="https://itlogics.ca" target="_blank" title="ITlogic Solutions — Home" style="display:inline-flex;align-items:center;text-decoration:none;line-height:0"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNDAgNTYiIHdpZHRoPSIyNDAiIGhlaWdodD0iNTYiPgogIDx0aXRsZT5JVGxvZ2ljIFNvbHV0aW9uczwvdGl0bGU+CiAgPGNpcmNsZSBjeD0iMzIiIGN5PSIxNCIgcj0iOSIgZmlsbD0iIzRBQkZCMCIvPgogIDxjaXJjbGUgY3g9IjEzIiBjeT0iNDYiIHI9IjciIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjkiLz4KICA8Y2lyY2xlIGN4PSI1MSIgY3k9IjQ2IiByPSI3IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC45Ii8+CiAgPGxpbmUgeDE9IjI1IiB5MT0iMjEiIHgyPSIxOCIgeTI9IjQwIiBzdHJva2U9IndoaXRlIiBzdHJva2Utd2lkdGg9IjIuNCIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGxpbmUgeDE9IjM5IiB5MT0iMjEiIHgyPSI0NyIgeTI9IjQwIiBzdHJva2U9IiM0QUJGQjAiIHN0cm9rZS13aWR0aD0iMi40IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8bGluZSB4MT0iMjAiIHkxPSI0NiIgeDI9IjQ0IiB5Mj0iNDYiIHN0cm9rZT0icmdiYSgyNTUsMjU1LDI1NSwwLjI4KSIgc3Ryb2tlLXdpZHRoPSIxLjQiIHN0cm9rZS1kYXNoYXJyYXk9IjMgMyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGNpcmNsZSBjeD0iMTkiIGN5PSIzMSIgcj0iMyIgZmlsbD0iIzRBQkZCMCIvPgogIDxjaXJjbGUgY3g9IjQ2IiBjeT0iMzEiIHI9IjMiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjgiLz4KICA8dGV4dCB4PSI3MCIgeT0iMjkiIGZvbnQtZmFtaWx5PSInUGx1cyBKYWthcnRhIFNhbnMnLHN5c3RlbS11aSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjIyIiBmb250LXdlaWdodD0iNzAwIiBsZXR0ZXItc3BhY2luZz0iLTAuNCIgZmlsbD0id2hpdGUiPklUbG9naWM8L3RleHQ+CiAgPGxpbmUgeDE9IjcwIiB5MT0iMzQiIHgyPSIxNTQiIHkyPSIzNCIgc3Ryb2tlPSIjNEFCRkIwIiBzdHJva2Utd2lkdGg9IjEuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPHRleHQgeD0iNzAiIHk9IjQ4IiBmb250LWZhbWlseT0iJ1BsdXMgSmFrYXJ0YSBTYW5zJyxzeXN0ZW0tdWksc2Fucy1zZXJpZiIgZm9udC1zaXplPSI5IiBmb250LXdlaWdodD0iNTAwIiBsZXR0ZXItc3BhY2luZz0iMi4yIiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMzgpIj5TT0xVVElPTlM8L3RleHQ+Cjwvc3ZnPg==" alt="ITlogic Solutions Inc."></a>
   <div class="masthead-right" style="font-family:'Plus Jakarta Sans',sans-serif">
     <span>M365 LICENSING REVIEW</span>
     CLIENT INTAKE FORM

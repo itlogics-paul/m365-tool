@@ -15,8 +15,8 @@
   --muted:#5A7080;--muted2:#8A9FB0;--muted3:#B8CDD8;
   --border:#D4E2EC;--border2:#E8F0F5;
   --canvas:#F0F5F8;--surface:#FFFFFF;
-  --navy:#0B1C2C;--navy2:#152535;
-  --teal:#00897B;--teal-b:#00695C;--teal-l:#E0F2F1;
+  --navy:#1A2B3C;--navy2:#243447;
+  --teal:#4ABFB0;--teal-b:#2E9E8F;--teal-l:#E8F8F6;
   --amber:#E65100;--amber-l:#FBE9E7;
   --red:#C62828;--red-l:#FFEBEE;
   --green:#2E7D32;--green-l:#E8F5E9;
@@ -156,7 +156,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 .scenario-body{padding:16px;flex:1}
 .scenario-badge{font-family:var(--mono);font-size:10px;font-weight:500;padding:3px 9px;border-radius:4px}
 .badge-cur{background:var(--canvas);color:var(--ink3);border:1px solid var(--border)}
-.badge-mod{background:var(--teal-l);color:var(--teal-b);border:1px solid #80CBC4}
+.badge-mod{background:var(--teal-l);color:var(--teal-d);border:1px solid #80CBC4}
 
 /* ── DATA TABLES ── */
 .dt{width:100%;border-collapse:collapse;font-size:12px}
@@ -196,7 +196,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 .finding-icon{font-size:14px;flex-shrink:0;margin-top:1px}
 .finding-title{font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:2px}
 .finding-desc{font-size:11.5px;color:var(--muted);line-height:1.55}
-.finding-rec{font-size:11px;color:var(--teal-b);margin-top:4px;font-style:italic}
+.finding-rec{font-size:11px;color:var(--teal-d);margin-top:4px;font-style:italic}
 .sev-tag{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:3px;margin-left:6px;vertical-align:middle}
 .crit .sev-tag{background:#FFCDD2;color:var(--red)}.high .sev-tag{background:#FFE082;color:#5D4037}
 .med .sev-tag{background:#FFE082;color:#5D4037}.ok .sev-tag{background:#C8E6C9;color:var(--green)}
@@ -268,7 +268,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
 <!-- MASTHEAD -->
 <div class="masthead">
   <div class="brand" style="gap:0;padding-right:20px">
-    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNjAgNjQiIHdpZHRoPSIyNjAiIGhlaWdodD0iNjQiPgogIDx0aXRsZT5JVGxvZ2ljIFNvbHV0aW9uczwvdGl0bGU+CiAgPCEtLSBOb2RlIHRyaWFuZ2xlIG1hcmsgLS0+CiAgPGNpcmNsZSBjeD0iMzgiIGN5PSIxNiIgcj0iMTAiIGZpbGw9IiM0QUJGQjAiLz4KICA8Y2lyY2xlIGN4PSIxNiIgY3k9IjUyIiByPSI4IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC45Ii8+CiAgPGNpcmNsZSBjeD0iNjAiIGN5PSI1MiIgcj0iOCIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuOSIvPgogIDxsaW5lIHgxPSIzMCIgeTE9IjI0IiB4Mj0iMjEiIHkyPSI0NSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxsaW5lIHgxPSI0NiIgeTE9IjI0IiB4Mj0iNTUiIHkyPSI0NSIgc3Ryb2tlPSIjNEFCRkIwIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGxpbmUgeDE9IjI0IiB5MT0iNTIiIHgyPSI1MiIgeTI9IjUyIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4yOCkiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtZGFzaGFycmF5PSIzLjUgMy41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSIyMyIgY3k9IjM2IiByPSIzLjUiIGZpbGw9IiM0QUJGQjAiLz4KICA8Y2lyY2xlIGN4PSI1MyIgY3k9IjM2IiByPSIzLjUiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjgiLz4KICA8IS0tIFdvcmRtYXJrIC0tPgogIDx0ZXh0IHg9IjgyIiB5PSIzNCIgZm9udC1mYW1pbHk9IidQbHVzIEpha2FydGEgU2Fucycsc3lzdGVtLXVpLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZvbnQtd2VpZ2h0PSI3MDAiIGxldHRlci1zcGFjaW5nPSItMC41IiBmaWxsPSJ3aGl0ZSI+SVRsb2dpYzwvdGV4dD4KICA8bGluZSB4MT0iODIiIHkxPSIzOSIgeDI9IjE3NCIgeTI9IjM5IiBzdHJva2U9IiM0QUJGQjAiIHN0cm9rZS13aWR0aD0iMS44IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8dGV4dCB4PSI4MiIgeT0iNTQiIGZvbnQtZmFtaWx5PSInUGx1cyBKYWthcnRhIFNhbnMnLHN5c3RlbS11aSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iNTAwIiBsZXR0ZXItc3BhY2luZz0iMi40IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMzgpIj5TT0xVVElPTlM8L3RleHQ+Cjwvc3ZnPg==" alt="ITlogic Solutions" style="height:44px;width:auto;margin-right:0;flex-shrink:0">
+    <a href="https://itlogics.ca" target="_blank" style="display:inline-flex;align-items:center;text-decoration:none"><a href="https://itlogics.ca" target="_blank" title="ITlogic Solutions — Home" style="display:inline-flex;align-items:center;text-decoration:none;line-height:0"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNjAgNjQiIHdpZHRoPSIyNjAiIGhlaWdodD0iNjQiPgogIDx0aXRsZT5JVGxvZ2ljIFNvbHV0aW9uczwvdGl0bGU+CiAgPCEtLSBOb2RlIHRyaWFuZ2xlIG1hcmsgLS0+CiAgPGNpcmNsZSBjeD0iMzgiIGN5PSIxNiIgcj0iMTAiIGZpbGw9IiM0QUJGQjAiLz4KICA8Y2lyY2xlIGN4PSIxNiIgY3k9IjUyIiByPSI4IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC45Ii8+CiAgPGNpcmNsZSBjeD0iNjAiIGN5PSI1MiIgcj0iOCIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuOSIvPgogIDxsaW5lIHgxPSIzMCIgeTE9IjI0IiB4Mj0iMjEiIHkyPSI0NSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxsaW5lIHgxPSI0NiIgeTE9IjI0IiB4Mj0iNTUiIHkyPSI0NSIgc3Ryb2tlPSIjNEFCRkIwIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGxpbmUgeDE9IjI0IiB5MT0iNTIiIHgyPSI1MiIgeTI9IjUyIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4yOCkiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtZGFzaGFycmF5PSIzLjUgMy41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSIyMyIgY3k9IjM2IiByPSIzLjUiIGZpbGw9IiM0QUJGQjAiLz4KICA8Y2lyY2xlIGN4PSI1MyIgY3k9IjM2IiByPSIzLjUiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjgiLz4KICA8IS0tIFdvcmRtYXJrIC0tPgogIDx0ZXh0IHg9IjgyIiB5PSIzNCIgZm9udC1mYW1pbHk9IidQbHVzIEpha2FydGEgU2Fucycsc3lzdGVtLXVpLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZvbnQtd2VpZ2h0PSI3MDAiIGxldHRlci1zcGFjaW5nPSItMC41IiBmaWxsPSJ3aGl0ZSI+SVRsb2dpYzwvdGV4dD4KICA8bGluZSB4MT0iODIiIHkxPSIzOSIgeDI9IjE3NCIgeTI9IjM5IiBzdHJva2U9IiM0QUJGQjAiIHN0cm9rZS13aWR0aD0iMS44IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8dGV4dCB4PSI4MiIgeT0iNTQiIGZvbnQtZmFtaWx5PSInUGx1cyBKYWthcnRhIFNhbnMnLHN5c3RlbS11aSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iNTAwIiBsZXR0ZXItc3BhY2luZz0iMi40IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMzgpIj5TT0xVVElPTlM8L3RleHQ+Cjwvc3ZnPg==" alt="ITlogic Solutions" style="height:44px;width:auto;margin-right:0;flex-shrink:0"></a></a>
     <div style="border-left:1px solid rgba(255,255,255,.12);padding-left:14px">
       <div class="brand-name" style="font-size:11px;color:#fff;letter-spacing:.04em">M365 Licensing Strategy Tool</div>
       <div class="brand-sub" style="font-size:9px">Proprietary · ITlogic Solutions Inc. · Confidential</div>
@@ -477,7 +477,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         <div class="card-body" id="cov-current"></div>
       </div>
       <div class="card">
-        <div class="card-head" style="background:var(--teal-b)"><div class="card-head-left"><div class="card-icon">📊</div><div><div class="card-title">Modeled Scenario Coverage</div><div class="card-sub">Updates as you edit the Scenario Model</div></div></div></div>
+        <div class="card-head" style="background:var(--teal-d)"><div class="card-head-left"><div class="card-icon">📊</div><div><div class="card-title">Modeled Scenario Coverage</div><div class="card-sub">Updates as you edit the Scenario Model</div></div></div></div>
         <div class="card-body" id="cov-modeled"></div>
       </div>
     </div>
@@ -541,7 +541,7 @@ input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
         </p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
           <div style="background:var(--teal-l);border:1px solid #80CBC4;border-radius:8px;padding:14px">
-            <div style="font-family:var(--mono);font-size:10px;font-weight:700;color:var(--teal-b);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">This Assessment Covers</div>
+            <div style="font-family:var(--mono);font-size:10px;font-weight:700;color:var(--teal-d);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">This Assessment Covers</div>
             <div style="font-size:12px;color:var(--ink2);line-height:1.7">
               ✓ License types and quantities<br>
               ✓ Feature availability by license tier<br>
@@ -1097,7 +1097,7 @@ function buildFeatureMatrix(){
     <th style="background:var(--red);text-align:center">F1</th>
     <th style="background:var(--amber);text-align:center">Standard/Basic</th>
     <th style="background:#1565C0;text-align:center">E3</th>
-    <th style="background:var(--teal-b);text-align:center">Biz Premium</th>
+    <th style="background:var(--teal-d);text-align:center">Biz Premium</th>
     <th style="background:var(--green);text-align:center">E5</th>
   </tr></thead><tbody>`;
   MATRIX_DATA.forEach(([name,f1,bs,e3,bp,e5,risk])=>{
@@ -1208,7 +1208,7 @@ function buildAdvisoryReport(cur, tot, hasScenario, mod, refTot){
     'Migrate to M365 E3 ($39/u/mo) or Business Premium ($22/u/mo, ≤300 users). Both include CA, Intune, and Defender.',o365e3);
 
   if(advisories.length===0){
-    return `<div style="background:#0B1C2C;border-radius:10px;padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
+    return `<div style="background:#1A2B3C;border-radius:10px;padding:20px 24px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
       <div style="font-size:24px">✅</div>
       <div>
         <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#E85D04;margin-bottom:4px">Security Advisories</div>
@@ -1230,7 +1230,7 @@ function buildAdvisoryReport(cur, tot, hasScenario, mod, refTot){
   const stateDesc = hasScenario
     ? '<span style="color:#009B86;font-weight:600">Modeled Scenario</span> — gaps remaining after scenario is applied'
     : '<span style="font-weight:600">Current State</span>';
-  html+=`<div style="background:#0B1C2C;border-radius:10px 10px 0 0;padding:16px 24px;margin-bottom:0">
+  html+=`<div style="background:#1A2B3C;border-radius:10px 10px 0 0;padding:16px 24px;margin-bottom:0">
     <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#E85D04;margin-bottom:4px">Security Advisories</div>
     <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:3px">Licensing-Based Security Risk Register</div>
     <div style="font-size:12px;color:rgba(255,255,255,.5)">Analyzing: ${stateDesc} · Not a configuration audit</div>
@@ -1252,14 +1252,14 @@ function buildAdvisoryReport(cur, tot, hasScenario, mod, refTot){
         </div>
         <div style="font-size:12px;color:#1C2B3A;margin-bottom:5px;font-weight:500">${a.impact}</div>
         <div style="font-size:11.5px;color:#607080;line-height:1.6;padding:8px 12px;background:rgba(0,0,0,.03);border-left:3px solid ${g.color};border-radius:0 4px 4px 0;margin-bottom:6px">${a.risk}</div>
-        <div style="font-size:11.5px;color:#00695C;font-style:italic">→ ${a.remediation}</div>
+        <div style="font-size:11.5px;color:#2E9E8F;font-style:italic">→ ${a.remediation}</div>
       </div>`;
     });
     html+='</div>';
   });
 
   // Best practices CTA at bottom
-  html+=`<div style="background:#0B1C2C;border-radius:0 0 10px 10px;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:16px;border-radius:10px">
+  html+=`<div style="background:#1A2B3C;border-radius:0 0 10px 10px;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:16px;border-radius:10px">
     <div>
       <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#E85D04;margin-bottom:5px">Recommended Next Engagement</div>
       <div style="font-size:14px;font-weight:700;color:#fff;margin-bottom:4px">M365 Security Best Practices Assessment</div>
@@ -1363,7 +1363,7 @@ function renderReport(){
   const section=(eyebrow,title,content,bg='#fff',borderColor='#D4E2EC')=>`
     <div style="background:${bg};border:1px solid ${borderColor};border-radius:10px;overflow:hidden;margin-bottom:16px">
       <div style="padding:14px 20px;border-bottom:1px solid ${borderColor}20">
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#00897B;margin-bottom:3px">${eyebrow}</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#4ABFB0;margin-bottom:3px">${eyebrow}</div>
         <div style="font-size:15px;font-weight:600;color:#0A0F14">${title}</div>
       </div>
       <div style="padding:20px">${content}</div>
@@ -1390,7 +1390,7 @@ function renderReport(){
   let r='';
 
   // HEADER
-  r+=`<div style="background:#0B1C2C;border-radius:10px;padding:28px 32px;margin-bottom:16px">
+  r+=`<div style="background:#1A2B3C;border-radius:10px;padding:28px 32px;margin-bottom:16px">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:18px;padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.12)">
       <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNjAgNjQiIHdpZHRoPSIyNjAiIGhlaWdodD0iNjQiPgogIDx0aXRsZT5JVGxvZ2ljIFNvbHV0aW9uczwvdGl0bGU+CiAgPCEtLSBOb2RlIHRyaWFuZ2xlIG1hcmsgLS0+CiAgPGNpcmNsZSBjeD0iMzgiIGN5PSIxNiIgcj0iMTAiIGZpbGw9IiM0QUJGQjAiLz4KICA8Y2lyY2xlIGN4PSIxNiIgY3k9IjUyIiByPSI4IiBmaWxsPSJ3aGl0ZSIgb3BhY2l0eT0iMC45Ii8+CiAgPGNpcmNsZSBjeD0iNjAiIGN5PSI1MiIgcj0iOCIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuOSIvPgogIDxsaW5lIHgxPSIzMCIgeTE9IjI0IiB4Mj0iMjEiIHkyPSI0NSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyLjYiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDxsaW5lIHgxPSI0NiIgeTE9IjI0IiB4Mj0iNTUiIHkyPSI0NSIgc3Ryb2tlPSIjNEFCRkIwIiBzdHJva2Utd2lkdGg9IjIuNiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIi8+CiAgPGxpbmUgeDE9IjI0IiB5MT0iNTIiIHgyPSI1MiIgeTI9IjUyIiBzdHJva2U9InJnYmEoMjU1LDI1NSwyNTUsMC4yOCkiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2UtZGFzaGFycmF5PSIzLjUgMy41IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8Y2lyY2xlIGN4PSIyMyIgY3k9IjM2IiByPSIzLjUiIGZpbGw9IiM0QUJGQjAiLz4KICA8Y2lyY2xlIGN4PSI1MyIgY3k9IjM2IiByPSIzLjUiIGZpbGw9IndoaXRlIiBvcGFjaXR5PSIwLjgiLz4KICA8IS0tIFdvcmRtYXJrIC0tPgogIDx0ZXh0IHg9IjgyIiB5PSIzNCIgZm9udC1mYW1pbHk9IidQbHVzIEpha2FydGEgU2Fucycsc3lzdGVtLXVpLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZvbnQtd2VpZ2h0PSI3MDAiIGxldHRlci1zcGFjaW5nPSItMC41IiBmaWxsPSJ3aGl0ZSI+SVRsb2dpYzwvdGV4dD4KICA8bGluZSB4MT0iODIiIHkxPSIzOSIgeDI9IjE3NCIgeTI9IjM5IiBzdHJva2U9IiM0QUJGQjAiIHN0cm9rZS13aWR0aD0iMS44IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz4KICA8dGV4dCB4PSI4MiIgeT0iNTQiIGZvbnQtZmFtaWx5PSInUGx1cyBKYWthcnRhIFNhbnMnLHN5c3RlbS11aSxzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iNTAwIiBsZXR0ZXItc3BhY2luZz0iMi40IiBmaWxsPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMzgpIj5TT0xVVElPTlM8L3RleHQ+Cjwvc3ZnPg==" style="height:36px;width:auto;flex-shrink:0" alt="ITlogic Solutions Inc.">
       <div style="text-align:right;flex-shrink:0">
@@ -1430,7 +1430,7 @@ function renderReport(){
   r+=section('Section 1','Current State Overview',`
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px">
       ${bigStat('Total Users',tot.toLocaleString(),'licensed users in scope','#0A0F14','#F4F8FB')}
-      ${bigStat('Monthly Cost',fmt(mo),fmt(mo*12)+' annually','#0B1C2C','#F4F8FB')}
+      ${bigStat('Monthly Cost',fmt(mo),fmt(mo*12)+' annually','#1A2B3C','#F4F8FB')}
       ${bigStat('Cost / User / Mo',fmt(cpu),'current average','#E65100','#FBE9E7')}
     </div>
     <div style="margin-bottom:6px;font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#8A9FB0">License Distribution</div>
@@ -1470,13 +1470,13 @@ function renderReport(){
       <strong style="color:#0A0F14">Microsoft 365 security is license-dependent — not tenant-wide.</strong>
       Features enabled in the admin center apply only to users who hold the required license. 
       Coverage percentages below are based on reported license quantities only.
-      ${hasScenario?'<span style="color:#00897B;font-weight:500"> Dashed indicator shows modeled scenario coverage.</span>':''}
+      ${hasScenario?'<span style="color:#4ABFB0;font-weight:500"> Dashed indicator shows modeled scenario coverage.</span>':''}
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 32px">
       <div>${covBars.slice(0,3).map(([l,p,mp])=>chartBar(l,p,pctColor(p),hasScenario?mp:undefined,'#009B86')).join('')}</div>
       <div>${covBars.slice(3).map(([l,p,mp])=>chartBar(l,p,pctColor(p),hasScenario?mp:undefined,'#009B86')).join('')}</div>
     </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding:12px 16px;background:#0B1C2C;border-radius:8px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding:12px 16px;background:#1A2B3C;border-radius:8px">
       <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(255,255,255,.6)">Average coverage (core features)</div>
       <div style="font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:700;color:${pctColor(avgCov)}">${avgCov}%
         ${hasScenario&&avgCovMod!==avgCov?`<span style="font-size:12px;color:#009B86;margin-left:8px">→ ${avgCovMod}% in scenario</span>`:''}
@@ -1494,7 +1494,7 @@ function renderReport(){
         </div>
         <div style="display:flex;align-items:center;gap:16px;text-align:right">
           <span style="font-size:12px;color:#607080">${qty} ${NON_ADDON.includes(k)?'users':'licenses'}</span>
-          <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:#00695C;min-width:80px">${fmt(P[k].p*qty)}/mo</span>
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:600;color:#2E9E8F;min-width:80px">${fmt(P[k].p*qty)}/mo</span>
         </div>
       </div>`).join('');
 
@@ -1508,7 +1508,7 @@ function renderReport(){
         <div>
           <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#8A9FB0;margin-bottom:12px">Current State</div>
           ${distRows}
-          <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:600;border-top:2px solid #0B1C2C;margin-top:8px">
+          <div style="display:flex;justify-content:space-between;padding:10px 0;font-weight:600;border-top:2px solid #1A2B3C;margin-top:8px">
             <span style="font-size:13px">Total</span>
             <span style="font-family:'IBM Plex Mono',monospace">${fmt(mo)}/mo</span>
           </div>
@@ -1531,7 +1531,7 @@ function renderReport(){
             <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:700">${fmt(mo)}/mo</span>
           </div>
           <div style="height:14px;background:#EEF3F8;border-radius:99px;overflow:hidden">
-            <div style="height:100%;width:100%;background:#0B1C2C;border-radius:99px"></div>
+            <div style="height:100%;width:100%;background:#1A2B3C;border-radius:99px"></div>
           </div>
         </div>
         <div>
@@ -1549,7 +1549,7 @@ function renderReport(){
         ${bigStat('Monthly Savings',fmt(Math.abs(saveMo)),saveMo>=0?'per month':'additional cost',saveMo>=0?'#2E7D32':'#C62828',saveMo>=0?'#E8F5E9':'#FFEBEE')}
         ${bigStat('Annual Impact',fmt(Math.abs(saveMo*12)),saveMo>=0?'per year saved':'per year more',saveMo>=0?'#2E7D32':'#C62828',saveMo>=0?'#E8F5E9':'#FFEBEE')}
         ${bigStat('Cost Reduction',Math.abs(savePct)+'%',saveMo>=0?'vs current spend':'increase',saveMo>=0?'#2E7D32':'#C62828',saveMo>=0?'#E8F5E9':'#FFEBEE')}
-        ${bigStat('Cost / User',fmt(modCpu)+'/mo',`vs ${fmt(cpu)} current`,'#00897B','#E0F2F1')}
+        ${bigStat('Cost / User',fmt(modCpu)+'/mo',`vs ${fmt(cpu)} current`,'#4ABFB0','#E8F8F6')}
       </div>
     `,'#F0FAF8','#80CBC4');
   }
@@ -1599,7 +1599,7 @@ function renderReport(){
   `);
 
   // SECTION 6 — BEST PRACTICES CTA
-  r+=`<div style="background:#0B1C2C;border-radius:10px;padding:24px 28px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:20px">
+  r+=`<div style="background:#1A2B3C;border-radius:10px;padding:24px 28px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:20px">
     <div>
       <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:#E85D04;margin-bottom:6px">Recommended Next Engagement</div>
       <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:6px">M365 Security Best Practices Assessment</div>
@@ -1615,7 +1615,7 @@ function renderReport(){
   </div>`;
 
   // FOOTER
-  r+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:#0B1C2C;border-radius:8px;font-size:11px;color:rgba(255,255,255,.5)">
+  r+=`<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:#1A2B3C;border-radius:8px;font-size:11px;color:rgba(255,255,255,.5)">
     <span>Prepared by <strong style="color:#fff">${prep}</strong> &nbsp;·&nbsp; M365 Licensing Strategy Tool — ITlogic Solutions Inc. &nbsp;·&nbsp; <strong style="color:#E85D04;letter-spacing:.05em">CONFIDENTIAL</strong></span>
     <span>All pricing is reference/estimate only &nbsp;·&nbsp; ${today}</span>
   </div>`;
